@@ -16,11 +16,14 @@
         - [Default Parameters](#default-parameters)
 - [Structural Typing and Assignment]
 - [Interfaces]
+    - [implements]?
 - [Type Assertions]
 - [Widening and Narrowing]
 - [Index Signatures]
 - [Utility Types]
 - [Generics]
+    - [extends]?
+    - [keyof]?
 - [Updating or Extending]
 
 # Study Guide Bullet Points
@@ -38,6 +41,9 @@
 - Utility types
 - Generics
 - Updating or extending types
+(Not on Study Guide)
+- Union Types
+    - Literal Types
 
 # TypeScript Compiler
 
@@ -158,3 +164,21 @@ add('a', 'b');  // TSError
 ```
 
 ## Notes
+
+# Index Signatures
+
+- Use `[value: type]` notation to allow for future unknown properties with a consistent typing to be added to an object.
+
+```ts
+interface Price {
+  [item: string]: number;
+}
+
+const ownedProperty: Price = {
+  car: 20_000,
+  bicycle: 2_000,
+}
+
+ownedProperty.tv = 500;         // Valid
+ownedProperty.owner = 'Derek';  // TSError: Type 'string' is not assignable to type 'number'.
+```
