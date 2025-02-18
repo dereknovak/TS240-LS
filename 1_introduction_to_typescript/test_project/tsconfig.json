@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "commonjs",
+    "strict": true,
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true,
+  },
+  "include": [
+    "./src/**/*"
+  ],
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "Recommended"
+}

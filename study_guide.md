@@ -55,12 +55,23 @@
 - `undefined`
 - `null`
 
+## Type Annotation
+
+- The usage of a type, along with `:` to explicitly determine a value's type.
+
+## Implicit Type
+
+- TypeScript will usually attempt to *infer* a value's type. When declaring an intializing a variable.
+
 ```ts
 let name: string = 'Derek';
+// Same as
+let name = 'Derek';
 
 name = 'Bob';  // Valid
 name = 42;     // TSError
 ```
+
 
 # Complex Types
 
@@ -93,7 +104,7 @@ nestedNumbers = [1, [2, 3], 4, [5]];       // TSError: Type 'number' is not assi
 
 ## any
 
-- By default, types are set to `any`, allowing any primitive or data type to be referenced by a variable.
+- By default, types are set to `any`, allowing any primitive or data type to be referenced by a variable. (NOT CORRECT)
 
 ```ts
 let name = 'Derek';
@@ -182,3 +193,21 @@ const ownedProperty: Price = {
 ownedProperty.tv = 500;         // Valid
 ownedProperty.owner = 'Derek';  // TSError: Type 'string' is not assignable to type 'number'.
 ```
+
+# Notes
+
+- Type Annotation
+    - Using `:` to explicitly set a type defintion
+- Type Inference
+    - "Type inference is a feature in TypeScript that allows the compiler to automatically deduce the types of variables, function parameters, and function return values when they are not explicitly specified."
+    - https://launchschool.com/lessons/525da66e/assignments/c73e2a10
+- Literal Type
+    - " literal types are a way to describe specific values that a variable can have."
+    - https://launchschool.com/lessons/525da66e/assignments/4007c99e
+- Explicit Typing
+    - "Explicit typing is when you explicitly specify the type of a variable."
+    - https://launchschool.com/lessons/525da66e/assignments/d573a840
+- Type Inference
+    - "Type inference is when TypeScript infers the data type of a variable based on its initial value and its static analysis of the code paths, including the structure of the code and the context in which a value is used. "
+    - https://launchschool.com/lessons/525da66e/assignments/d573a840
+    - Cannot infer function parameters, defaults to `any`
