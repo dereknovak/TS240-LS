@@ -211,3 +211,30 @@ ownedProperty.owner = 'Derek';  // TSError: Type 'string' is not assignable to t
     - "Type inference is when TypeScript infers the data type of a variable based on its initial value and its static analysis of the code paths, including the structure of the code and the context in which a value is used. "
     - https://launchschool.com/lessons/525da66e/assignments/d573a840
     - Cannot infer function parameters, defaults to `any`
+- Shape
+    - "The "shape" of an object refers to the structure of its properties and their types. When we talk about the shape of an object, we are referring to the names and types of the object's properties."
+    - https://launchschool.com/lessons/e46f5e6c/assignments/c8536259
+- Structural Typing
+    - "This means that when the compiler compares two types to determine whether they are compatible, it only looks at the shape of the data -- their properties and the types of those properties -- rather than comparing the names of the types."
+    - https://launchschool.com/lessons/e46f5e6c/assignments/1b314913
+    - Even though the type *name* might be different, if the type itself matches, then TypeScript doesn't complain
+    - When assigning an object to a variable, it may include more properties so long as the required ones are present. Only when referencing another variable
+        - However, TypeScript will still not recognize it as a property!***
+        - If assigned to an object literal, TypeScript will complain
+```ts
+let personA = { name: 'Derek', age: 31 };
+let personB: { name: string } = personA;  // Valid
+
+personB.age;  // TSError!
+let personC: { name: string } = { name: 'Bob', age: 22 };  // TSError!
+```
+- readonly
+    - "In TypeScript, readonly properties are used to create properties that can only be set once during initialization and cannot be modified afterward."
+    - https://launchschool.com/lessons/e46f5e6c/assignments/72d37d4b
+    - If `readonly` is pointing to an object, its nested objects *can* be changed.
+    - This can be bypassed for arrays with `ReadonlyArray<element types>`
+    - Revisit some of the quirks later
+- Type Assertion
+    - "we can use a feature called type assertions to force the compiler to treat a value as a given type."
+    - https://launchschool.com/lessons/e46f5e6c/assignments/f7334412
+    - This is especially useful in AJAX when a return may come later that we know will be a certain type
