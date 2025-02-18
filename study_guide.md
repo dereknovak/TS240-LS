@@ -238,3 +238,7 @@ let personC: { name: string } = { name: 'Bob', age: 22 };  // TSError!
     - "we can use a feature called type assertions to force the compiler to treat a value as a given type."
     - https://launchschool.com/lessons/e46f5e6c/assignments/f7334412
     - This is especially useful in AJAX when a return may come later that we know will be a certain type
+- Classes
+    - https://launchschool.com/lessons/e46f5e6c/assignments/3a786d9d
+    - `implements` can be used to match props/instance methods of a class to an interface
+    - Subclasses must have the same function signatures as parents
