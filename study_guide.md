@@ -249,6 +249,7 @@ let personC: { name: string } = { name: 'Bob', age: 22 };  // TSError!
     - Any operation must be usable on *every* member, unless narrowing occurs
         - This includes object properties
             - To narrow this, you can use `in` ( `if ("property" in obj) {` )
+                - Returns `true` if property exists on object or prototype chain
     - narrow type
         - "A narrow type is more specific and represents a smaller set of possible values"
     - wide type
@@ -266,3 +267,16 @@ let personC: { name: string } = { name: 'Bob', age: 22 };  // TSError!
     - The type can be inferred by the argument passed in
     - Can use multiple types in a generic (`example<T1, T2>`)
     - Arrays have their own TypeScript syntax that can be used (`T[] === Array<T>`)
+- Type Predicate
+    - https://launchschool.com/lessons/edc1804c/assignments/277255fa
+    - Uses the parameter and defined return to determine if a value is a certain type
+        - `function example(parameter: type) parameter is DesiredType {`
+        - The function should return a boolean
+        - QUESTION
+            - Why can't we just use a boolean return? Ask forum.
+- Type Guard approaches
+    - https://launchschool.com/lessons/edc1804c/assignments/c4c9b02e
+    1. `typeof`
+    2. `in`
+    3. Truthiness
+    4. `instanceof`
