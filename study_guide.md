@@ -241,4 +241,28 @@ let personC: { name: string } = { name: 'Bob', age: 22 };  // TSError!
 - Classes
     - https://launchschool.com/lessons/e46f5e6c/assignments/3a786d9d
     - `implements` can be used to match props/instance methods of a class to an interface
+        - Still must include all relevant types. This just allows errors to be easily seen
     - Subclasses must have the same function signatures as parents
+- Unions
+    - https://launchschool.com/lessons/cc0e9f36/assignments/42f54844
+    - Each one is called a 'member'
+    - Any operation must be usable on *every* member, unless narrowing occurs
+        - This includes object properties
+            - To narrow this, you can use `in` ( `if ("property" in obj) {` )
+    - narrow type
+        - "A narrow type is more specific and represents a smaller set of possible values"
+    - wide type
+        - "a wide type is more general and represents a larger set of possible values."
+    - type guard
+- Function overloads
+    - Different parameters create different returns
+    - Compatibility of implementation signature
+        1. Parameters of implementation must match all overload signatures
+        2. One's parameter type should be assignable to the other's parameter type
+        3. Return of implemention must match all overload signatures
+- Generics
+    - https://launchschool.com/lessons/cc0e9f36/assignments/0796881b
+    - "generics are best thought of as all-purpose placeholders for a type that can be specified later."
+    - The type can be inferred by the argument passed in
+    - Can use multiple types in a generic (`example<T1, T2>`)
+    - Arrays have their own TypeScript syntax that can be used (`T[] === Array<T>`)
