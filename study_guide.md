@@ -280,3 +280,28 @@ let personC: { name: string } = { name: 'Bob', age: 22 };  // TSError!
     2. `in`
     3. Truthiness
     4. `instanceof`
+- Short Circuting
+    - https://launchschool.com/lessons/edc1804c/assignments/396c04b1
+- Discriminated Unions
+    - https://launchschool.com/lessons/edc1804c/assignments/eb2354d7
+    - A consistent property throughout multiple object types to help distinguish between the types
+- Exhaustiveness Checking
+    - https://launchschool.com/lessons/edc1804c/assignments/d4fe90c7
+    - Using `never` to prevent the end of an if/else or switch case
+- Type Unsoundness
+    - https://launchschool.com/lessons/edc1804c/assignments/8cc12760
+    - Despite all of TypeScript's compiler checks, some things can still slip through the cracks
+    - "Type unsoundness happens when the type system fails to prevent type errors, resulting in runtime errors. This can lead to unexpected behavior and bugs in your code."
+    - Examples
+        1. Use of `any`
+        2. Type assertions
+        3. Indexing beyond bounds of array
+- `unknown`
+    - https://launchschool.com/lessons/edc1804c/assignments/bafd77a3
+    - A safer version of `any`
+    - Cannot be assigned to any other type
+    - Cannot access any properties on `unknown` type (including methods)
+    - You *can* use type guards to determine type of `unknown`.
+    - When checking for an object, you must check for `null` as well
+        - Because of the extra work involved, many applications will abstract the validation to a simpler API, such as `io-ts`, `runtypes` and `zod`
+
