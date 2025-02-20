@@ -304,4 +304,46 @@ let personC: { name: string } = { name: 'Bob', age: 22 };  // TSError!
     - You *can* use type guards to determine type of `unknown`.
     - When checking for an object, you must check for `null` as well
         - Because of the extra work involved, many applications will abstract the validation to a simpler API, such as `io-ts`, `runtypes` and `zod`
+- Index Signatures
+    - Can only use `string | number | symbol` for index
 
+- Declaration Merging
+    - https://launchschool.com/lessons/18156389/assignments/7e47e4a7
+    - "Declaration merging refers to the TypeScript compiler's ability to take two separate interface declarations that share the same name and create a single interface that merges the original ones."
+    - Only works for interfaces, not type aliases
+- `extends`
+    - Allows a new interface to be made that inherits members from another interface
+    - https://launchschool.com/lessons/18156389/assignments/8e25c4ce
+    - You can separate multiple inheritees with a comma
+        - `interface Child extends Parent1, Parent2 {`
+    - You can extend from a type alias, but a type alias cannot extend
+- Type Intersections
+    - https://launchschool.com/lessons/18156389/assignments/8ecb0087
+    - "Type intersections allow you to combine multiple types into a single type."
+    - Uses `&` to create intersection
+    - `extends` is generally preferred as it prevents clashing members
+        - A type intersection would allow `{ id: string }` and `{ id: number }` while `extends` would not.
+Interfaces vs Type Aliases
+    - https://launchschool.com/lessons/18156389/assignments/7fa6e9b3
+    1. Versatility
+        - Interfaces are only used for objects
+        - Type Aliases are used for *all* types
+    2. Declaration merging
+        - Interfaces can be defined repeatedly, merging each time (open)
+        - Type Aliases cannot be re-declared (closed)
+    3. Extending
+        - Interfaces use `extends`, which is more expressive
+        - Type Aliases use Type Intersections
+    4. Error messages
+        - Interfaces provided clearer errors (see `extends`)
+        - Type Aliases can create type unsoundness
+- `keyof`
+    - https://launchschool.com/lessons/18156389/assignments/285a50b3
+    - "The keyof operator evaluates to a union of an interface's properties"
+    - Creates a union type of all of the keys of an interface
+        - `{ name: string, age: number }` => `keyof` => `'name' | 'age'`
+- Generic Constraints
+    - https://launchschool.com/lessons/18156389/assignments/6bc0b1c1
+    - "Generic constraints help us refine and restrict our generic types, providing more stringent rules that these types must adhere to."
+    - Uses `extends` to extend members of an interface to include specific members
+    - REVISIT
