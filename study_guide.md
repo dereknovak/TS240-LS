@@ -347,3 +347,44 @@ Interfaces vs Type Aliases
     - "Generic constraints help us refine and restrict our generic types, providing more stringent rules that these types must adhere to."
     - Uses `extends` to extend members of an interface to include specific members
     - REVISIT
+- Spread Operator
+    - https://launchschool.com/lessons/f1e59145/assignments/0305025b
+    - Enforces type during the merge
+    - Used to concatenate 2 objects
+        - If 2 are used and share properties, the second will overwrite the first
+        - If 1 is used before an object literal, the property will be overwritten
+        - If 1 is used after an object literal, an error will be shown
+- Options
+    - https://launchschool.com/lessons/f1e59145/assignments/c103b744
+- Exceptions handling
+    - https://launchschool.com/lessons/f1e59145/assignments/cd5ebe2b
+    - Use the type definition of `unknown` for the error
+        - If it is an `instanceof` Error, proceed
+        - Otherwise, throw an actual error
+- Promises
+    - https://launchschool.com/lessons/f1e59145/assignments/8f2ad165
+    - Use generic syntax with `Promise` and indicate the *final* return
+        - This will make the return type `type | PromiseLike<type>`
+            - Promises can return a value or another Promise
+    - Await/Async REVISIT
+        - SPEND SOME TIME LEARNING AWAIT/ASYNC
+    - Rejection is the same line of logic as exceptions handling
+- Utility Types
+    - Pick/Omit
+        - https://launchschool.com/lessons/f1e59145/assignments/ff4868f3
+        - `Pick<>` will filter the specified keys using `keyof`
+            - An error will be shown if a specified key does not exist
+        - `Omit<>` will omit the specified keys from the returned type
+            - This will NOT show an error if the specified key does not exist
+    - ReturnType/Parameters
+        - https://launchschool.com/lessons/f1e59145/assignments/752ca3f2
+        - Both must receive a function type as an argument
+            - `(arg1: type, arg2: type) => type`
+        - `ReturnType<>` returns the function's return type
+            - `type`
+        - `Parameters<>` return the function's parameters types
+            - `[type, type]`
+    - Partial
+        - https://launchschool.com/lessons/f1e59145/assignments/75930d5d
+        - Using an exists interface, returns a new interface with all members optional
+
