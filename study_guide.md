@@ -4,22 +4,35 @@
 
 - [TypeScript Compiler](#typescript-compiler)
 - [Primitive Types](#primitive-types)
+    - [Type Annotation](#type-annotation)
+    - [Type Inference](#type-inference)
+    - [Explicit Typing](#explicit-typing)
 - [Complex Types](#complex-types)
+    - [Union Types](#union-types)
+    - [Literal Types](#literal-types)
     - [Arrays](#arrays)
-- [Special Types]
-    - [any]
-    - [unknown]
+- [Special Types](#special-types)
+    - [any](#any)
+    - [unknown](#unknown)
     - [never]
+- [Type Aliases](#type-aliases)
+- [Object Types](#object-types)
+    - [Type Annotation](#type-annotation-1)
+    - [Type Alias](#type-alias)
+        - [Type Intersection](#type-intersection)
+    - [Interface](#interface)
+        - [extends](#extends)
 - [Functions]
     - [Parameters](#parameters)
         - [Optional Parameters](#optional-parameters)
         - [Default Parameters](#default-parameters)
+    - [Return Value](#return-value)
 - [Structural Typing and Assignment]
 - [Interfaces]
     - [implements]?
 - [Type Assertions]
 - [Widening and Narrowing]
-- [Index Signatures]
+- [Index Signatures](#index-signatures)
 - [Utility Types]
 - [Generics]
     - [extends]?
@@ -41,9 +54,6 @@
 - Utility types
 - Generics
 - Updating or extending types
-(Not on Study Guide)
-- Union Types
-    - Literal Types
 
 # TypeScript Compiler
 
@@ -59,9 +69,19 @@
 
 - The usage of a type, along with `:` to explicitly determine a value's type.
 
-## Implicit Type
+```ts
+let greeting: string = 'Hello, world';
+let age: number = 42;
+let isOn: boolean = true;
+```
 
-- TypeScript will usually attempt to *infer* a value's type. When declaring an intializing a variable.
+## Type Inference
+https://launchschool.com/lessons/525da66e/assignments/c73e2a10
+https://launchschool.com/lessons/525da66e/assignments/d573a840
+
+- "Type inference is a feature in TypeScript that allows the compiler to automatically deduce the types of variables, function parameters, and function return values when they are not explicitly specified."
+- "Type inference is when TypeScript infers the data type of a variable based on its initial value and its static analysis of the code paths, including the structure of the code and the context in which a value is used."
+- TypeScript will usually attempt to *infer* a value's type. To default a type to `any`, simply declare the variable without an assignment.
 
 ```ts
 let name: string = 'Derek';
@@ -72,8 +92,62 @@ name = 'Bob';  // Valid
 name = 42;     // TSError
 ```
 
+- Functions cannot utilize type inference and default to `any`.
+    - This is due to compile-time only running type checks, while the actual values passed into a function are only known at runtime.
+
+```ts
+function log(value): void {  // value: any
+  console.log(value);
+}
+```
+
+## Explicit Typing
+https://launchschool.com/lessons/525da66e/assignments/d573a840
+
+- "Explicit typing is when you explicitly specify the type of a variable"
+- Use type annotation to explictly type a variable.
 
 # Complex Types
+
+## Union Types
+https://launchschool.com/lessons/cc0e9f36/assignments/42f54844
+
+- Each type is called a 'member'
+- Any property/method called must be valid on *every* member, unless narrowing occurs
+    - To narrow this, you can use `in` ( `if ("property" in obj) {` )
+        - Returns `true` if property exists on object or prototype chain
+
+```ts
+let id: string | number;
+
+id = 21;    // Valid
+id = '21';  // Valid
+```
+
+### Narrow Type
+
+- "A narrow type is more specific and represents a smaller set of possible values"
+
+### Wide Type
+
+- "A wide type is more general and represents a larger set of possible values."
+
+```ts
+let value1: string;  // Narrow
+let value2: string | number | boolean;  // Wide
+```
+
+## Literal Types
+https://launchschool.com/lessons/525da66e/assignments/4007c99e
+
+- "Literal types are a way to describe specific values that a variable can have."
+
+```ts
+let direction: 'North' | 'South' | 'East' | 'West';
+
+direction = 'North';      // Valid
+direction = 'Southwest';  // Invalid
+```
 
 ## Arrays
 
@@ -103,17 +177,180 @@ nestedNumbers = [1, [2, 3], 4, [5]];       // TSError: Type 'number' is not assi
 # Special Types
 
 ## any
+https://launchschool.com/lessons/edc1804c/assignments/23a5d21c
 
-- By default, types are set to `any`, allowing any primitive or data type to be referenced by a variable. (NOT CORRECT)
+- "Using `any` essentially turns off type checking for a given value or assignment."
+- When declaring a variable without initialization and type annotation, the variable defaults to `any`.
 
 ```ts
-let name = 'Derek';
-// Same as
-let name: any = 'Derek';
+let name: any;
 
-name = 'Bob';  // Valid
-name = 42;     // Valid
+name = 'Derek';  // Valid
+name = 22;       // Valid
+name.length;     // Valid, but will throw an exception at runtime
 ```
+
+## unknown
+https://launchschool.com/lessons/edc1804c/assignments/bafd77a3
+
+- The `unknown` type is a *safer* version of `any`.
+    1. They cannot be assigned to any other type
+    2. You cannot invoke any properties on it
+    3. You can use type guards to determine its type
+
+- Variables can be reassigned to any value, but you can't do anything with it.
+
+```ts
+let data: unknown;
+
+data = 'Some data';  // Valid
+data = 404;          // Valid
+data.toFixed(2);     // TSError: 'data' is of type 'unknown'.
+```
+
+### Checking null
+
+- When checking for an object, `null` must be checked as well.
+
+```ts
+function isObject(obj: unknown): void {
+  if (typeof obj === 'object') {             // add `&& obj !== null`
+    console.log(`It's an object literal!`);
+  }
+}
+
+isObject({ name: 'Derek' });  // Valid
+isObject(null);               // Valid, but will have unexpected results
+```
+
+### Type Assertion Bridge
+
+- When using a type assertion, `unknown` can be used to bridge two types together
+- `unknown` can be coerced to any type, and any type can be asserted to `unknown`
+
+```ts
+let magicNumber: number = 42;
+(magicNumber as unknown as string).toUpperCase();  // Valid, but will result in an error at runtime
+```
+
+# Type Aliases
+https://launchschool.com/lessons/e46f5e6c/assignments/1c5b6872
+
+- "Type aliases enable developers to define new custom types, based on existing types."
+
+```ts
+type PrimaryColor = 'red' | 'yellow' | 'blue';
+type SecondaryColor = 'orange' | 'green' | 'purple';
+
+type Color = PrimaryColor | SecondaryColor;
+```
+
+# Object Types
+
+## Type Annotation
+
+```ts
+const clarinet: {
+  make: string;
+  model: string;
+  play(): void;  
+} = {
+  make: 'Buffet Crampon',
+  model: 'R13 Prestige',
+  play: () => console.log('Squeak!'),
+};
+```
+
+## Type Alias
+
+```ts
+type Clarinet = {
+  make: string;
+  model: string;
+  play(): void;
+};
+```
+
+### Type Intersection
+https://launchschool.com/lessons/18156389/assignments/8ecb0087
+
+- "Type intersections allow you to combine multiple types into a single type."
+- Typically used with objects, as other types have rare use-cases
+
+```ts
+type User = { name: string } & { age: number };
+
+const user1: User = {
+  name: 'Timothy',
+  age: 33,
+}
+```
+
+- Can be used to inhert the properties from a parent object.
+
+```ts
+type Clarinet = {
+  make: string;
+  model: string;
+  play(): void;
+};
+
+type EbClarinet = Clarinet & {
+  key: string;
+}
+
+const efer: EbClarinet = {
+  make: 'Buffet Crampon',
+  model: 'R13 Prestige',
+  key: 'Eb',
+  play: () => console.log('Squeak!'),
+};
+```
+
+## Interface
+
+- Interfaces are used to establish the shape of an object.
+
+```ts
+interface Clarinet {
+  make: string;
+  model: string;
+  play(): void;
+}
+```
+
+### extends
+https://launchschool.com/lessons/18156389/assignments/8e25c4ce
+
+- Allows a new interface to be made that inherits members from another interface
+- You can extend from a type alias
+- If multiple inheriters, separate with a comma
+    - `interface Child extends Parent1, Parent2 {`
+
+```ts
+type Clarinet = {
+  make: string;
+  model: string;
+  play(): void;
+};
+
+interface EbClarinet extends Clarinet {
+  key: string
+}
+
+const efer: EbClarinet = {
+  make: 'Buffet Crampon',
+  model: 'R13 Prestige',
+  key: 'Eb',
+  play: () => console.log('Squeak!'),
+};
+```
+
+
+
+
+
+
 
 # Functions
 
@@ -174,8 +411,6 @@ add(2, 5);      // Valid, returns `7`
 add('a', 'b');  // TSError
 ```
 
-## Notes
-
 # Index Signatures
 
 - Use `[value: type]` notation to allow for future unknown properties with a consistent typing to be added to an object.
@@ -196,21 +431,6 @@ ownedProperty.owner = 'Derek';  // TSError: Type 'string' is not assignable to t
 
 # Notes
 
-- Type Annotation
-    - Using `:` to explicitly set a type defintion
-- Type Inference
-    - "Type inference is a feature in TypeScript that allows the compiler to automatically deduce the types of variables, function parameters, and function return values when they are not explicitly specified."
-    - https://launchschool.com/lessons/525da66e/assignments/c73e2a10
-- Literal Type
-    - " literal types are a way to describe specific values that a variable can have."
-    - https://launchschool.com/lessons/525da66e/assignments/4007c99e
-- Explicit Typing
-    - "Explicit typing is when you explicitly specify the type of a variable."
-    - https://launchschool.com/lessons/525da66e/assignments/d573a840
-- Type Inference
-    - "Type inference is when TypeScript infers the data type of a variable based on its initial value and its static analysis of the code paths, including the structure of the code and the context in which a value is used. "
-    - https://launchschool.com/lessons/525da66e/assignments/d573a840
-    - Cannot infer function parameters, defaults to `any`
 - Shape
     - "The "shape" of an object refers to the structure of its properties and their types. When we talk about the shape of an object, we are referring to the names and types of the object's properties."
     - https://launchschool.com/lessons/e46f5e6c/assignments/c8536259
@@ -243,18 +463,7 @@ let personC: { name: string } = { name: 'Bob', age: 22 };  // TSError!
     - `implements` can be used to match props/instance methods of a class to an interface
         - Still must include all relevant types. This just allows errors to be easily seen
     - Subclasses must have the same function signatures as parents
-- Unions
-    - https://launchschool.com/lessons/cc0e9f36/assignments/42f54844
-    - Each one is called a 'member'
-    - Any operation must be usable on *every* member, unless narrowing occurs
-        - This includes object properties
-            - To narrow this, you can use `in` ( `if ("property" in obj) {` )
-                - Returns `true` if property exists on object or prototype chain
-    - narrow type
-        - "A narrow type is more specific and represents a smaller set of possible values"
-    - wide type
-        - "a wide type is more general and represents a larger set of possible values."
-    - type guard
+
 - Function overloads
     - Different parameters create different returns
     - Compatibility of implementation signature
@@ -296,14 +505,6 @@ let personC: { name: string } = { name: 'Bob', age: 22 };  // TSError!
         1. Use of `any`
         2. Type assertions
         3. Indexing beyond bounds of array
-- `unknown`
-    - https://launchschool.com/lessons/edc1804c/assignments/bafd77a3
-    - A safer version of `any`
-    - Cannot be assigned to any other type
-    - Cannot access any properties on `unknown` type (including methods)
-    - You *can* use type guards to determine type of `unknown`.
-    - When checking for an object, you must check for `null` as well
-        - Because of the extra work involved, many applications will abstract the validation to a simpler API, such as `io-ts`, `runtypes` and `zod`
 - Index Signatures
     - Can only use `string | number | symbol` for index
 
@@ -311,12 +512,6 @@ let personC: { name: string } = { name: 'Bob', age: 22 };  // TSError!
     - https://launchschool.com/lessons/18156389/assignments/7e47e4a7
     - "Declaration merging refers to the TypeScript compiler's ability to take two separate interface declarations that share the same name and create a single interface that merges the original ones."
     - Only works for interfaces, not type aliases
-- `extends`
-    - Allows a new interface to be made that inherits members from another interface
-    - https://launchschool.com/lessons/18156389/assignments/8e25c4ce
-    - You can separate multiple inheritees with a comma
-        - `interface Child extends Parent1, Parent2 {`
-    - You can extend from a type alias, but a type alias cannot extend
 - Type Intersections
     - https://launchschool.com/lessons/18156389/assignments/8ecb0087
     - "Type intersections allow you to combine multiple types into a single type."
@@ -346,6 +541,7 @@ Interfaces vs Type Aliases
     - https://launchschool.com/lessons/18156389/assignments/6bc0b1c1
     - "Generic constraints help us refine and restrict our generic types, providing more stringent rules that these types must adhere to."
     - Uses `extends` to extend members of an interface to include specific members
+        - An example like `<T extends string | number>` MUST include one of those types
     - REVISIT
 - Spread Operator
     - https://launchschool.com/lessons/f1e59145/assignments/0305025b
