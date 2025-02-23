@@ -15,6 +15,8 @@
     - [any](#any)
     - [unknown](#unknown)
     - [never]
+- [Narrowing]
+    - [Type Guard](#type-guards)
 - [Type Aliases](#type-aliases)
 - [Object Types](#object-types)
     - [Type Annotation](#type-annotation-1)
@@ -22,7 +24,7 @@
         - [Type Intersection](#type-intersection)
     - [Interface](#interface)
         - [extends](#extends)
-- [Functions]
+- [Functions](#functions)
     - [Parameters](#parameters)
         - [Optional Parameters](#optional-parameters)
         - [Default Parameters](#default-parameters)
@@ -34,9 +36,9 @@
 - [Widening and Narrowing]
 - [Index Signatures](#index-signatures)
 - [Utility Types]
-- [Generics]
-    - [extends]?
-    - [keyof]?
+- [Generics](#generics)
+    - [keyof](#keyof)
+    - [Generic Constraints](#generic-constraints)
 - [Updating or Extending]
 
 # Study Guide Bullet Points
@@ -233,6 +235,62 @@ let magicNumber: number = 42;
 (magicNumber as unknown as string).toUpperCase();  // Valid, but will result in an error at runtime
 ```
 
+# Narrowing
+https://launchschool.com/lessons/edc1804c/assignments/c4c9b02e
+
+- "This process of refining a value from a larger set of possible types to a smaller set of possible types (or a single type) is called narrowing."
+
+
+## Type Guards
+
+### typeof
+
+```ts
+function makeBig(value: string | boolean | number) {
+  if (typeof value === 'string') {
+    return value.toUpperCase();
+  } else if (typeof value === 'boolean') {
+    return 'BIG BOOLEAN';
+  } else {
+    return value * 1000;
+  }
+}
+
+console.log(makeBig('hello, world'));
+console.log(makeBig(true));
+console.log(makeBig(22));
+```
+
+### in
+
+```ts
+interface Cat {
+  meow(): void;
+}
+
+interface Dog {
+  woof(): void;
+}
+
+function speak(obj: Cat | Dog): void {
+  if ('meow' in obj) {
+    obj.meow();
+  } else {
+    obj.woof();
+  }
+}
+
+const cat: Cat = { meow: () => console.log('Meow!') };
+const dog: Dog = { woof: () => console.log('Woof!') };
+
+speak(cat);
+speak(dog);
+```
+
+### Truthiness
+
+### instanceof
+
 # Type Aliases
 https://launchschool.com/lessons/e46f5e6c/assignments/1c5b6872
 
@@ -401,14 +459,13 @@ greet(42, 'Steve');       // TSError: Argument of type 'number' is not assignabl
 
 - By default, all functions have a return type of `void`.
 
-- vvv NOT CORRECT. Figure out why this is not throwing an error
 ```ts
-function add(a, b): number {
+function add(a: any, b: any): number {
   return a + b;
 }
 
-add(2, 5);      // Valid, returns `7`
-add('a', 'b');  // TSError
+add(2, 5);                    // Valid, returns `7`
+const value = add('a', 'b');  // Valid, but `'ab'` is typed as a number
 ```
 
 # Index Signatures
@@ -428,6 +485,107 @@ const ownedProperty: Price = {
 ownedProperty.tv = 500;         // Valid
 ownedProperty.owner = 'Derek';  // TSError: Type 'string' is not assignable to type 'number'.
 ```
+
+# Generics
+https://launchschool.com/lessons/cc0e9f36/assignments/0796881b
+
+- "In their simplest version, generics are best thought of as all-purpose placeholders for a type that can be specified later."
+- Generics are placeholder types than can be defined at a later time.
+- Generics are possible through functions, objects, and arrays.
+
+### Function
+
+```ts
+function wrapInArray<T>(value: T): T[] {
+  return [value];
+}
+
+wrapInArray('hello, world');
+wrapInArray(42);
+```
+>The `wrapInArray` function utilizes the generic type `T` to allow any value to be passed inside and return an array of that value. This is possible because TypeScript uses type inference to determine the type of its passed-in value, assign that type to `T`, then use that information for the return type.
+
+### Object
+```ts
+interface Person<T> {
+  name: string;
+  age: T;
+}
+
+const stringBob: Person<string> = {
+  name: 'Bob',
+  age: 'thirty',
+};
+
+const numBob: Person<number> = {
+  name: 'Bob',
+  age: 30,
+}
+```
+>In this example, the generic type `T` allows the user to determine its type at a later point and apply it to all instances of `T` within the object it's constructing. This allows for flexible code that may have to adapt based upon the kind of data received.
+
+## keyof
+https://launchschool.com/lessons/18156389/assignments/285a50b3
+
+- "The `keyof` operator evaluates to a union of an interface's properties."
+- The `keyof` operator creates a union type of all its members' property names.
+
+```ts
+interface Instrument {
+  make: string;
+  model: string;
+  section: string;
+}
+
+type InstrumentKeys = keyof Instrument;  // 'make' | 'model' | 'section'
+
+function getInstrumentProperty(instrument: Instrument, key: InstrumentKeys): object | string {
+  return instrument[key];
+}
+```
+
+## Generic Constraints
+https://launchschool.com/lessons/18156389/assignments/6bc0b1c1
+
+- "Generic constraints help us refine and restrict our generic types, providing more stringent rules that these types must adhere to."
+- Generics use `extends` to extend a generic type to include specific members
+
+```ts
+function getProperty<O, K extends keyof O>(obj: O, key: K): O[K] {
+  return obj[key];
+}
+
+const derek = {
+  name: 'Derek',
+  age: 31,
+};
+
+getProperty(derek, 'name');   // Valid
+getProperty(derek, 'email');  // TSError, Argument of type '"email"' is not assignable to parameter of type '"name" | "age"'.
+```
+>In this example, the generic type `K` extends the union type created by `keyof O` to *include the argument to which its assigned*. This means that whatever object is passed into the function, assigned to generic type `O`, must contain that key name or TypeScript will complain.
+
+```ts
+interface Person {
+  name: string;
+  age: number;
+}
+
+interface Musician extends Person {
+  instrument: string;
+}
+
+function getName<O extends { name: string }>(data: O): string {
+  return data.name;
+}
+
+const billy: Musician = {
+  name: 'Billy',
+  age: 32,
+  instrument: 'clarinet',
+};
+```
+>In this example, the generic type `O` requires that its object contains the property `'name'`, as `O` represents the intersection of whatever object is passed in and `{ name: string }`.
 
 # Notes
 
@@ -532,17 +690,6 @@ Interfaces vs Type Aliases
     4. Error messages
         - Interfaces provided clearer errors (see `extends`)
         - Type Aliases can create type unsoundness
-- `keyof`
-    - https://launchschool.com/lessons/18156389/assignments/285a50b3
-    - "The keyof operator evaluates to a union of an interface's properties"
-    - Creates a union type of all of the keys of an interface
-        - `{ name: string, age: number }` => `keyof` => `'name' | 'age'`
-- Generic Constraints
-    - https://launchschool.com/lessons/18156389/assignments/6bc0b1c1
-    - "Generic constraints help us refine and restrict our generic types, providing more stringent rules that these types must adhere to."
-    - Uses `extends` to extend members of an interface to include specific members
-        - An example like `<T extends string | number>` MUST include one of those types
-    - REVISIT
 - Spread Operator
     - https://launchschool.com/lessons/f1e59145/assignments/0305025b
     - Enforces type during the merge
@@ -584,3 +731,25 @@ Interfaces vs Type Aliases
         - https://launchschool.com/lessons/f1e59145/assignments/75930d5d
         - Using an exists interface, returns a new interface with all members optional
 
+# SPOT session with Scott
+
+build time is when you write the code
+run time is when you run the code
+
+- any
+  - Esstentially removes the type guards
+- Unknown
+    - TS is forcing us to check what type it is
+
+- TS is all about type guards
+
+```ts
+function greet(greeting: string, name = 'Person'): void {
+  console.log(`${greeting}, ${name}`);
+}
+
+let test = greet('Hello');
+```
+
+- TURN INTELLISENSE OFF
+- Look into ReadonlyArray
