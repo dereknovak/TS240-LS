@@ -24,21 +24,26 @@
         - [Type Intersection](#type-intersection)
     - [Interface](#interface)
         - [extends](#extends)
+- [Structural Typing](#structural-typing)
+    - [Shape]
 - [Functions](#functions)
     - [Parameters](#parameters)
         - [Optional Parameters](#optional-parameters)
         - [Default Parameters](#default-parameters)
     - [Return Value](#return-value)
-- [Structural Typing and Assignment]
 - [Interfaces]
     - [implements]?
 - [Type Assertions]
 - [Widening and Narrowing]
 - [Index Signatures](#index-signatures)
-- [Utility Types]
 - [Generics](#generics)
     - [keyof](#keyof)
     - [Generic Constraints](#generic-constraints)
+- [Utility Types](#utility-types)
+    - [Pick](#pick)
+    - [Omit](#omit)
+    - [ReturnType](#returntype)
+    - [Parameters](#parameters)
 - [Updating or Extending]
 
 # Study Guide Bullet Points
@@ -404,11 +409,29 @@ const efer: EbClarinet = {
 };
 ```
 
+# Structural Typing
+https://launchschool.com/lessons/e46f5e6c/assignments/1b314913
 
+- "This means that when the compiler compares two types to determine whether they are compatible, it only looks at the shape of the data -- their properties and the types of those properties -- rather than comparing the names of the types."
+- TypeScript only cares about the *shape* of the data being compared, not the name.
+    - Even though the type *name* might be different, if the type itself matches, then TypeScript doesn't complain.
+- When comparing variables references, the argument may have more properties than required
+    - TypeScript will not recognize additional properties as valid ones, so they cannot be called.
+- An object literal must *completely match* the shape of the variable's type.
 
+```ts
+let personA = { name: 'Derek', age: 31 };
+let personB: { name: string } = personA;  // Valid
 
+personB.age;  // TSError!
+let personC: { name: string } = { name: 'Bob', age: 22 };  // TSError!
+```
 
+## Shape
+https://launchschool.com/lessons/e46f5e6c/assignments/c8536259
 
+- "The "shape" of an object refers to the structure of its properties and their types. When we talk about the shape of an object, we are referring to the names and types of the object's properties."
+- The **shape** of an object represents the structure of all its properties and their respective types.
 
 # Functions
 
@@ -468,6 +491,25 @@ add(2, 5);                    // Valid, returns `7`
 const value = add('a', 'b');  // Valid, but `'ab'` is typed as a number
 ```
 
+## Function Overloads
+https://launchschool.com/lessons/cc0e9f36/assignments/c643808f
+
+- "Function overloads allow us to define multiple function signatures for the same function, each with different parameter and return types."
+- Must have at least 2 overload signatures
+- Compatibility of implementation signature
+    1. Parameters of implementation must match *all* overload signatures
+    2. One's parameter type should be assignable to the other's parameter type
+    3. Return of implemention must match all overload signatures
+
+```ts
+function wrapInArray(val: string): string[];                       // Overload Signature
+function wrapInArray(val: number): number[];                       // Overload Signature
+function wrapInArray(val: string | number): (string | number)[] {  // Implementation Signature
+  return [val];
+}
+```
+
+
 # Index Signatures
 
 - Use `[value: type]` notation to allow for future unknown properties with a consistent typing to be added to an object.
@@ -491,6 +533,9 @@ https://launchschool.com/lessons/cc0e9f36/assignments/0796881b
 
 - "In their simplest version, generics are best thought of as all-purpose placeholders for a type that can be specified later."
 - Generics are placeholder types than can be defined at a later time.
+- The generic type can be inferred by the argument passed in.
+- Multiple generic types should be separated by commas
+    - `Example<T, K>`
 - Generics are possible through functions, objects, and arrays.
 
 ### Function
@@ -587,25 +632,123 @@ const billy: Musician = {
 ```
 >In this example, the generic type `O` requires that its object contains the property `'name'`, as `O` represents the intersection of whatever object is passed in and `{ name: string }`.
 
+# Utility Types
+
+- "Utility types are special types in TypeScript that help developers perform transformations from one type to another."
+
+## Pick
+https://launchschool.com/lessons/f1e59145/assignments/ff4868f3
+
+- The `Pick` utility type filters an interface to include only the members included in its generic argument.
+    - Uses `keyof` internally to filter.
+- An invalid member will throw a TypeScript error.
+- Multiple members should be separated by a union type.
+
+```ts
+interface Student {
+  name: string;
+  age: number;
+  year: string
+  email: string;
+}
+
+type User = Pick<Student, 'name' | 'age' | 'email'>;
+
+const user: User = {
+  name: 'Derek',
+  age: 31,
+  email: 'derek@gmail.com',
+};
+```
+
+## Omit
+https://launchschool.com/lessons/f1e59145/assignments/ff4868f3
+
+- The `Omit` utility type filters an interface to include every member *except* those included in its generic argument.
+- An invalid member will be ignored.
+- Multiple members should be separated by a union type.
+
+```ts
+interface Student {
+  name: string;
+  age: number;
+  year: string
+  email: string;
+}
+
+type User = Omit<Student, 'year'>;
+
+const user: User = {
+  name: 'Derek',
+  age: 31,
+  email: 'derek@gmail.com',
+};
+```
+
+## ReturnType
+https://launchschool.com/lessons/f1e59145/assignments/752ca3f2
+
+- "The `ReturnType` utility type allows us to extract the return type of a function."
+- Accepts a *function type* as an argument
+    - Not the function itself, but its type
+
+```ts
+function createInstrument(type: string, key: string) {
+  return { type, key };
+}
+
+type Instrument = ReturnType<typeof createInstrument>;
+
+function play(instrument: Instrument) {
+  console.log(`Playing my ${instrument.key} ${instrument.type}.`);
+}
+
+const clarinet = createInstrument('clarinet', 'Bb');
+play(clarinet);  // Playing my Bb clarinet.
+```
+
+## Parameters
+https://launchschool.com/lessons/f1e59145/assignments/752ca3f2
+
+- "`Parameters` returns the parameter types as a tuple."
+- Accepts a *function type* as an argument
+
+```ts
+function add(a: number, b: number) {
+  return a + b;
+}
+
+type twoNums = Parameters<typeof add>;
+
+const nums: twoNums = [3, 4];
+```
+
+## Partial
+https://launchschool.com/lessons/f1e59145/assignments/75930d5d
+
+- "The `Partial` type allows us to create a new type based on an existing type, where all of the type's properties are optional."
+- Most useful when you don't know what kind of data you are going to receive.
+
+```ts
+interface ResponseData {
+  page: number;
+  size: number;
+  location: string;
+}
+
+function logData(data: Partial<ResponseData>) {
+  Object.entries(data).forEach(([k, v]) => {
+    console.log(`${k}: ${v}`);
+  });
+}
+
+logData({ page: 23, size: 2 });
+logData({ location: 'Somewhere' });
+logData({ page: 14, location: 'There' });
+```
+
 # Notes
 
-- Shape
-    - "The "shape" of an object refers to the structure of its properties and their types. When we talk about the shape of an object, we are referring to the names and types of the object's properties."
-    - https://launchschool.com/lessons/e46f5e6c/assignments/c8536259
-- Structural Typing
-    - "This means that when the compiler compares two types to determine whether they are compatible, it only looks at the shape of the data -- their properties and the types of those properties -- rather than comparing the names of the types."
-    - https://launchschool.com/lessons/e46f5e6c/assignments/1b314913
-    - Even though the type *name* might be different, if the type itself matches, then TypeScript doesn't complain
-    - When assigning an object to a variable, it may include more properties so long as the required ones are present. Only when referencing another variable
-        - However, TypeScript will still not recognize it as a property!***
-        - If assigned to an object literal, TypeScript will complain
-```ts
-let personA = { name: 'Derek', age: 31 };
-let personB: { name: string } = personA;  // Valid
-
-personB.age;  // TSError!
-let personC: { name: string } = { name: 'Bob', age: 22 };  // TSError!
-```
 - readonly
     - "In TypeScript, readonly properties are used to create properties that can only be set once during initialization and cannot be modified afterward."
     - https://launchschool.com/lessons/e46f5e6c/assignments/72d37d4b
@@ -628,12 +771,6 @@ let personC: { name: string } = { name: 'Bob', age: 22 };  // TSError!
         1. Parameters of implementation must match all overload signatures
         2. One's parameter type should be assignable to the other's parameter type
         3. Return of implemention must match all overload signatures
-- Generics
-    - https://launchschool.com/lessons/cc0e9f36/assignments/0796881b
-    - "generics are best thought of as all-purpose placeholders for a type that can be specified later."
-    - The type can be inferred by the argument passed in
-    - Can use multiple types in a generic (`example<T1, T2>`)
-    - Arrays have their own TypeScript syntax that can be used (`T[] === Array<T>`)
 - Type Predicate
     - https://launchschool.com/lessons/edc1804c/assignments/277255fa
     - Uses the parameter and defined return to determine if a value is a certain type
@@ -712,24 +849,7 @@ Interfaces vs Type Aliases
     - Await/Async REVISIT
         - SPEND SOME TIME LEARNING AWAIT/ASYNC
     - Rejection is the same line of logic as exceptions handling
-- Utility Types
-    - Pick/Omit
-        - https://launchschool.com/lessons/f1e59145/assignments/ff4868f3
-        - `Pick<>` will filter the specified keys using `keyof`
-            - An error will be shown if a specified key does not exist
-        - `Omit<>` will omit the specified keys from the returned type
-            - This will NOT show an error if the specified key does not exist
-    - ReturnType/Parameters
-        - https://launchschool.com/lessons/f1e59145/assignments/752ca3f2
-        - Both must receive a function type as an argument
-            - `(arg1: type, arg2: type) => type`
-        - `ReturnType<>` returns the function's return type
-            - `type`
-        - `Parameters<>` return the function's parameters types
-            - `[type, type]`
-    - Partial
-        - https://launchschool.com/lessons/f1e59145/assignments/75930d5d
-        - Using an exists interface, returns a new interface with all members optional
+
 
 # SPOT session with Scott
 
