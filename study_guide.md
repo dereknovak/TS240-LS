@@ -14,9 +14,12 @@
 - [Special Types](#special-types)
     - [any](#any)
     - [unknown](#unknown)
-    - [never]
-- [Narrowing]
+    - [never](#never)
+        - [Exhaustiveness Checking](#exhaustiveness-checking)
+- [Narrowing](#narrowing)
     - [Type Guard](#type-guards)
+    - [Type Predicate](#type-predicate)
+- [Discriminated Unions](#discriminated-unions)
 - [Type Aliases](#type-aliases)
 - [Object Types](#object-types)
     - [Type Annotation](#type-annotation-1)
@@ -24,17 +27,17 @@
         - [Type Intersection](#type-intersection)
     - [Interface](#interface)
         - [extends](#extends)
+    - [readonly](#readonly)
 - [Structural Typing](#structural-typing)
-    - [Shape]
+    - [Shape](#shape)
 - [Functions](#functions)
     - [Parameters](#parameters)
         - [Optional Parameters](#optional-parameters)
         - [Default Parameters](#default-parameters)
     - [Return Value](#return-value)
-- [Interfaces]
-    - [implements]?
-- [Type Assertions]
-- [Widening and Narrowing]
+    - [Function Overload](#function-overloads)
+- [Classes]
+- [Type Assertions](#type-assertion)
 - [Index Signatures](#index-signatures)
 - [Generics](#generics)
     - [keyof](#keyof)
@@ -240,6 +243,60 @@ let magicNumber: number = 42;
 (magicNumber as unknown as string).toUpperCase();  // Valid, but will result in an error at runtime
 ```
 
+## never
+https://launchschool.com/lessons/edc1804c/assignments/d4fe90c7
+
+- The `never` type is a special type in TypeScript that will raise a compiler error when any value is assigned to it, allowing for *exhaustiveness checking* to ensure all appropriate actions are taken.
+
+### Exhaustiveness Checking
+
+```ts
+interface Cheese {
+  department: 'specialty';
+  age: number;
+  origin: string;
+}
+
+interface Cake {
+  department: 'bakery';
+  flavor: string;
+  isDecorated: boolean;
+}
+
+interface Apple {
+  department: 'produce';
+  color: string;
+  quantity: number
+}
+
+type Product = Cheese | Cake | Apple;
+
+function describeProduct(product: Product) {
+  try {
+    switch (product.department) {
+      case 'specialty':
+        console.log(`I'm in specialty!'`);
+        break;
+      case 'bakery':
+        console.log(`I'm in bakery!`);
+        break;
+      case 'produce':
+        console.log(`I'm in produce!`);
+        break;
+      default:
+        const _exhaustiveCheck: never = product;
+        throw new Error('Invalid Shape');
+    }
+  } catch (e: unknown) {
+    if (e instanceof Error) {
+      console.log(e.message);
+    } else {
+      throw e;
+    }
+  }
+}
+```
+
 # Narrowing
 https://launchschool.com/lessons/edc1804c/assignments/c4c9b02e
 
@@ -295,6 +352,88 @@ speak(dog);
 ### Truthiness
 
 ### instanceof
+
+## Type Predicate
+https://launchschool.com/lessons/edc1804c/assignments/277255fa
+
+- "Type predicates are special return values that allow you to create custom type guards."
+- Uses the parameter and explicit return to determine if a value is a certain type
+- The function should always return a boolean
+
+```ts
+interface Circle {
+  radius: number;  
+}
+
+interface Square {
+  sideLength: number;
+}
+
+type Shape = Circle | Square;
+
+function isCircle(shape: Shape): shape is Circle {
+  return 'radius' in shape;
+}
+
+function describeShape(shape: Shape) {
+  if (isCircle(shape)) {
+    console.log('This is a circle');
+  } else {
+    console.log('This is a square');
+  }
+}
+
+describeShape({ radius: 3 });      // This is a circle
+describeShape({ sideLength: 4 });  // This is a square
+```
+
+# Discriminated Unions
+https://launchschool.com/lessons/edc1804c/assignments/eb2354d7
+
+- "Discriminated unions work by adding a common discriminant property to each member of the union. This property is then used to differentiate between the different members of the union."
+- Discriminated Unions utilize a consistent property throughout multiple types to help distinguish between them.
+
+```ts
+interface Cheese {
+  department: 'specialty';
+  age: number;
+  origin: string;
+}
+
+interface Cake {
+  department: 'bakery';
+  flavor: string;
+  isDecorated: boolean;
+}
+
+interface Apple {
+  department: 'produce';
+  color: string;
+  quantity: number
+}
+
+type Product = Cheese | Cake | Apple;
+
+function describeProduct(product: Product) {
+  switch (product.department) {
+    case 'specialty':
+      console.log(`I'm in specialty!'`);
+      break;
+    case 'bakery':
+      console.log(`I'm in bakery!`);
+      break;
+    case 'produce':
+      console.log(`I'm in produce!`);
+      break;
+  }
+}
+
+describeProduct({
+  department: 'bakery',
+  flavor: 'chocolate',
+  isDecorated: true,
+});
+```
 
 # Type Aliases
 https://launchschool.com/lessons/e46f5e6c/assignments/1c5b6872
@@ -409,6 +548,28 @@ const efer: EbClarinet = {
 };
 ```
 
+## readonly
+https://launchschool.com/lessons/e46f5e6c/assignments/72d37d4b
+
+- "In TypeScript, readonly properties are used to create properties that can only be set once during initialization and cannot be modified afterward."
+- If used on an object, the nested elements can be mutated.
+    - Use `ReadonlyArray` utility type to prevent this.
+
+```ts
+interface Person {
+  name: string;
+  age: number;
+  readonly ssn: string;
+}
+
+const derek: Person = {
+  name: 'Derek',
+  age: 31,
+  ssn: '123-45-6789',
+};
+
+```
+
 # Structural Typing
 https://launchschool.com/lessons/e46f5e6c/assignments/1b314913
 
@@ -509,6 +670,61 @@ function wrapInArray(val: string | number): (string | number)[] {  // Implementa
 }
 ```
 
+# Classes
+https://launchschool.com/lessons/e46f5e6c/assignments/3a786d9d
+
+- Subclasses must have the same function signatures as parents
+- Requirements:
+    1. Type the properties (top of class structure)
+    2. Type the constructor method parameters
+    3. Type the instance method parameters
+
+## implements
+
+- `implements` can be used to match props/instance methods of a class to an interface
+    - Still must include all relevant types. This just allows errors to be easily seen
+
+```ts
+interface Musician {
+  instrument: string;
+  play(): void;
+}
+
+class Musician implements Musician {
+  instrument: string;
+
+  constructor(instrument: string) {
+    this.instrument = instrument;
+  }
+
+  play() {
+    console.log(`Playing my ${this.instrument}`);
+  }
+}
+
+const clarinetist = new Musician('clarinet');
+clarinetist.play();  // Playing my clarinet
+```
+
+## public
+
+
+# Type Assertion
+https://launchschool.com/lessons/e46f5e6c/assignments/f7334412
+
+- "we can use a feature called type assertions to force the compiler to treat a value as a given type."
+- Type assertions can be use to change a variable's type due to the programmer knowing more about the relevant data than TypeScript.
+- This is especially useful in AJAX when a return may come later that we know will be a certain type.
+
+```ts
+function receiveData(data: unknown) {
+  return data;
+}
+
+const data = receiveData('data');
+(data as string).toUpperCase();    // DATA
+```
+>The type assertion on line 6 allows us to utilize the `toUpperCase` method on `data`, despite it being of type `unknown`, as the type definition is temporarily changed to `string`.
 
 # Index Signatures
 
@@ -747,37 +963,10 @@ logData({ location: 'Somewhere' });
 logData({ page: 14, location: 'There' });
 ```
 
+## ReadonlyArray
+
 # Notes
 
-- readonly
-    - "In TypeScript, readonly properties are used to create properties that can only be set once during initialization and cannot be modified afterward."
-    - https://launchschool.com/lessons/e46f5e6c/assignments/72d37d4b
-    - If `readonly` is pointing to an object, its nested objects *can* be changed.
-    - This can be bypassed for arrays with `ReadonlyArray<element types>`
-    - Revisit some of the quirks later
-- Type Assertion
-    - "we can use a feature called type assertions to force the compiler to treat a value as a given type."
-    - https://launchschool.com/lessons/e46f5e6c/assignments/f7334412
-    - This is especially useful in AJAX when a return may come later that we know will be a certain type
-- Classes
-    - https://launchschool.com/lessons/e46f5e6c/assignments/3a786d9d
-    - `implements` can be used to match props/instance methods of a class to an interface
-        - Still must include all relevant types. This just allows errors to be easily seen
-    - Subclasses must have the same function signatures as parents
-
-- Function overloads
-    - Different parameters create different returns
-    - Compatibility of implementation signature
-        1. Parameters of implementation must match all overload signatures
-        2. One's parameter type should be assignable to the other's parameter type
-        3. Return of implemention must match all overload signatures
-- Type Predicate
-    - https://launchschool.com/lessons/edc1804c/assignments/277255fa
-    - Uses the parameter and defined return to determine if a value is a certain type
-        - `function example(parameter: type) parameter is DesiredType {`
-        - The function should return a boolean
-        - QUESTION
-            - Why can't we just use a boolean return? Ask forum.
 - Type Guard approaches
     - https://launchschool.com/lessons/edc1804c/assignments/c4c9b02e
     1. `typeof`
@@ -786,9 +975,6 @@ logData({ page: 14, location: 'There' });
     4. `instanceof`
 - Short Circuting
     - https://launchschool.com/lessons/edc1804c/assignments/396c04b1
-- Discriminated Unions
-    - https://launchschool.com/lessons/edc1804c/assignments/eb2354d7
-    - A consistent property throughout multiple object types to help distinguish between the types
 - Exhaustiveness Checking
     - https://launchschool.com/lessons/edc1804c/assignments/d4fe90c7
     - Using `never` to prevent the end of an if/else or switch case
@@ -873,3 +1059,4 @@ let test = greet('Hello');
 
 - TURN INTELLISENSE OFF
 - Look into ReadonlyArray
+- Interface implements? (outside of class)
