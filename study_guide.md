@@ -200,6 +200,7 @@ nestedNumbers = [1, [2, 3], 4, [5]];       // TSError: Type 'number' is not assi
 https://launchschool.com/lessons/edc1804c/assignments/23a5d21c
 
 - "Using `any` essentially turns off type checking for a given value or assignment."
+- "You can assign all types to a variable of any type, and a value with type any can be assigned to every other type (except never)"
 - When declaring a variable without initialization and type annotation, the variable defaults to `any`.
 
 ```ts
@@ -568,7 +569,7 @@ interface Musician {
 
 const derek: Musician = {
   name: 'Derek',
-  instrument: 'clarient',
+  instrument: 'clarinet',
   age: 31,
   isActive: false,
 };
@@ -624,8 +625,6 @@ const mergedPerson: Person = {
 https://launchschool.com/lessons/e46f5e6c/assignments/72d37d4b
 
 - "In TypeScript, readonly properties are used to create properties that can only be set once during initialization and cannot be modified afterward."
-- If used on an object, the nested elements can be mutated.
-    - Use `ReadonlyArray` utility type to prevent this.
 
 ```ts
 interface Person {
