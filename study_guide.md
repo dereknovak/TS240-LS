@@ -19,6 +19,7 @@
 - [Narrowing](#narrowing)
     - [Type Guard](#type-guards)
     - [Type Predicate](#type-predicate)
+    - [Short-Circuiting](#short-circuiting)
 - [Discriminated Unions](#discriminated-unions)
 - [Type Aliases](#type-aliases)
 - [Object Types](#object-types)
@@ -27,6 +28,9 @@
         - [Type Intersection](#type-intersection)
     - [Interface](#interface)
         - [extends](#extends)
+        - [Declaration Merging](#declaration-merging)
+    - [Interface vs Type Alias](#interface-vs-type-alias)
+    - [Spread Operator](#spread-operator)
     - [readonly](#readonly)
 - [Structural Typing](#structural-typing)
     - [Shape](#shape)
@@ -36,7 +40,9 @@
         - [Default Parameters](#default-parameters)
     - [Return Value](#return-value)
     - [Function Overload](#function-overloads)
-- [Classes]
+- [Classes](#classes)
+    - [implements](#implements)
+    - [public](#public)
 - [Type Assertions](#type-assertion)
 - [Index Signatures](#index-signatures)
 - [Generics](#generics)
@@ -46,8 +52,10 @@
     - [Pick](#pick)
     - [Omit](#omit)
     - [ReturnType](#returntype)
-    - [Parameters](#parameters)
-- [Updating or Extending]
+    - [Parameters](#parameters-1)
+    - [Partial](#partial)
+    - [ReadonlyArray](#readonlyarray)
+- [Type Unsoundness](#type-unsoundness)
 
 # Study Guide Bullet Points
 
@@ -66,6 +74,8 @@
 - Updating or extending types
 
 # TypeScript Compiler
+
+- TypeScript is a *superset* of JavaScript - it contains all of its functionality with the addition of **static typing**. The language itself adds compile-time type checking, which oversees the type definitions throughout a file, catching errors in development before transpiling it into a JavaScript to be used at runtime. For this reason, the TypeScript compiler cannot evaluate expressions and relies solely on the type annotations of variables, objects, and functions throughout the program to establish a framework in which the JavaScript will run.
 
 # Primitive Types
 
@@ -246,53 +256,34 @@ let magicNumber: number = 42;
 ## never
 https://launchschool.com/lessons/edc1804c/assignments/d4fe90c7
 
-- The `never` type is a special type in TypeScript that will raise a compiler error when any value is assigned to it, allowing for *exhaustiveness checking* to ensure all appropriate actions are taken.
+- The `never` type is a special type in TypeScript that will raise a compiler error when any value is assigned to it, as no values can be assigned to a variable of type `never`, allowing for *exhaustiveness checking* to ensure all possible cases have been handled.
 
 ### Exhaustiveness Checking
 
+- Uses `never` to prevent the end of an `if...else` or `switch` case.
+
 ```ts
-interface Cheese {
-  department: 'specialty';
-  age: number;
-  origin: string;
+interface Circle {
+  type: 'circle';
+  radius: number;
 }
 
-interface Cake {
-  department: 'bakery';
-  flavor: string;
-  isDecorated: boolean;
+interface Square {
+  type: 'square';
+  sideLength: number;
 }
 
-interface Apple {
-  department: 'produce';
-  color: string;
-  quantity: number
-}
+type Shape = Circle | Square;
 
-type Product = Cheese | Cake | Apple;
-
-function describeProduct(product: Product) {
-  try {
-    switch (product.department) {
-      case 'specialty':
-        console.log(`I'm in specialty!'`);
-        break;
-      case 'bakery':
-        console.log(`I'm in bakery!`);
-        break;
-      case 'produce':
-        console.log(`I'm in produce!`);
-        break;
-      default:
-        const _exhaustiveCheck: never = product;
-        throw new Error('Invalid Shape');
-    }
-  } catch (e: unknown) {
-    if (e instanceof Error) {
-      console.log(e.message);
-    } else {
-      throw e;
-    }
+function getArea(shape: Shape) {
+  switch (shape.type) {
+    case 'circle':
+      return Math.PI * (shape.radius ** 2);
+    case 'square':
+      return shape.sideLength ** 2;
+    default:
+      const _exhaustiveCheck: never = shape;
+      throw new Error('Invalid Shape');
   }
 }
 ```
@@ -387,6 +378,29 @@ describeShape({ radius: 3 });      // This is a circle
 describeShape({ sideLength: 4 });  // This is a square
 ```
 
+## Short Circuiting
+https://launchschool.com/lessons/edc1804c/assignments/396c04b1
+
+- "Short-circuiting is a behavior of the logical operators (`&&` and `||`) in which the second operand is only evaluated if the first operand does not determine the result."
+- Short-circuiting can work as a type guard to make for more succint code.
+
+```ts
+interface Circle {
+  radius: number;
+}
+
+interface Square {
+  sideLength: number;
+}
+
+type Shape = Circle | Square;
+
+function logArea(shape: Shape) {
+  'radius' in shape &&
+    console.log(`Area: ${Math.PI * (shape.radius ** 2)}`);
+}
+```
+
 # Discriminated Unions
 https://launchschool.com/lessons/edc1804c/assignments/eb2354d7
 
@@ -394,45 +408,29 @@ https://launchschool.com/lessons/edc1804c/assignments/eb2354d7
 - Discriminated Unions utilize a consistent property throughout multiple types to help distinguish between them.
 
 ```ts
-interface Cheese {
-  department: 'specialty';
-  age: number;
-  origin: string;
+interface Circle {
+  type: 'circle';
+  radius: number;
 }
 
-interface Cake {
-  department: 'bakery';
-  flavor: string;
-  isDecorated: boolean;
+interface Square {
+  type: 'square';
+  sideLength: number;
 }
 
-interface Apple {
-  department: 'produce';
-  color: string;
-  quantity: number
-}
+type Shape = Circle | Square;
 
-type Product = Cheese | Cake | Apple;
-
-function describeProduct(product: Product) {
-  switch (product.department) {
-    case 'specialty':
-      console.log(`I'm in specialty!'`);
-      break;
-    case 'bakery':
-      console.log(`I'm in bakery!`);
-      break;
-    case 'produce':
-      console.log(`I'm in produce!`);
-      break;
+function getArea(shape: Shape) {
+  switch (shape.type) {
+    case 'circle':
+      return Math.PI * (shape.radius ** 2);
+    case 'square':
+      return shape.sideLength ** 2;
+    default:
+      const _exhaustiveCheck: never = shape;
+      throw new Error('Invalid Shape');
   }
 }
-
-describeProduct({
-  department: 'bakery',
-  flavor: 'chocolate',
-  isDecorated: true,
-});
 ```
 
 # Type Aliases
@@ -478,6 +476,8 @@ https://launchschool.com/lessons/18156389/assignments/8ecb0087
 
 - "Type intersections allow you to combine multiple types into a single type."
 - Typically used with objects, as other types have rare use-cases
+- `extends` with an interface is generally preferred as it prevents clashing members
+    - A type intersection would allow `{ id: string }` and `{ id: number }` while `extends` would not.
 
 ```ts
 type User = { name: string } & { age: number };
@@ -547,6 +547,78 @@ const efer: EbClarinet = {
   play: () => console.log('Squeak!'),
 };
 ```
+
+### Declaration Merging
+https://launchschool.com/lessons/18156389/assignments/7e47e4a7
+
+- "Declaration merging refers to the TypeScript compiler's ability to take two separate interface declarations that share the same name and create a single interface that merges the original ones."
+- Declaration Merging allows an interface to be declared again, merging its previous shape with the current one.
+- Type aliases do not support this functionality.
+
+```ts
+interface Musician {
+  name: string;
+  instrument: string;
+}
+
+interface Musician {
+  age: number;
+  isActive: boolean;
+}
+
+const derek: Musician = {
+  name: 'Derek',
+  instrument: 'clarient',
+  age: 31,
+  isActive: false,
+};
+```
+
+## Interface vs Type Alias
+https://launchschool.com/lessons/18156389/assignments/7fa6e9b3
+
+1. Versatility
+    - Interfaces are only used for objects
+    - Type Aliases are used for *all* types
+2. Declaration merging
+    - Interfaces can be declared repeatedly, merging each time (open)
+    - Type Aliases cannot be re-declared (closed)
+3. Extending
+    - Interfaces use `extends`, which is more expressive
+    - Type Aliases use Type Intersections
+4. Error messages
+    - Interfaces provided clearer errors (see `extends`)
+    - Type Aliases can create type unsoundness
+
+## Spread Operator
+https://launchschool.com/lessons/f1e59145/assignments/0305025b
+
+- Enforces type during the merge
+- Used to concatenate 2 objects
+    - If 2 are used and share properties, the second will overwrite the first
+    - If 1 is used before an object literal, the property will be overwritten
+    - If 1 is used after an object literal, an error will be shown
+
+```ts
+interface Person {
+  name: string;
+  age: number;
+}
+
+const person: Person = {
+  name: 'Bob',
+  age: 34,
+}
+
+
+const mergedPerson: Person = {
+  ...person,
+  age: 51,
+};
+
+// { name: 'Bob', age: 51 }
+```
+
 
 ## readonly
 https://launchschool.com/lessons/e46f5e6c/assignments/72d37d4b
@@ -678,19 +750,21 @@ https://launchschool.com/lessons/e46f5e6c/assignments/3a786d9d
     1. Type the properties (top of class structure)
     2. Type the constructor method parameters
     3. Type the instance method parameters
+- Participate in declaration merging.
 
 ## implements
 
 - `implements` can be used to match props/instance methods of a class to an interface
     - Still must include all relevant types. This just allows errors to be easily seen
+- If not used, the class will create its own interface using the same name.
 
 ```ts
-interface Musician {
+interface MusicianStuff {
   instrument: string;
   play(): void;
 }
 
-class Musician implements Musician {
+class Musician implements MusicianStuff {
   instrument: string;
 
   constructor(instrument: string) {
@@ -708,6 +782,24 @@ clarinetist.play();  // Playing my clarinet
 
 ## public
 
+- Can be used as a shorthand to prevent having to define the types at the top of the class structure.
+
+```ts
+interface MusicianStuff {
+  instrument: string;
+  play(): void;
+}
+
+class Musician implements MusicianStuff {
+  constructor(public instrument: string) {
+    this.instrument = instrument;
+  }
+
+  play() {
+    console.log(`Playing my ${this.instrument}`);
+  }
+}
+```
 
 # Type Assertion
 https://launchschool.com/lessons/e46f5e6c/assignments/f7334412
@@ -729,6 +821,7 @@ const data = receiveData('data');
 # Index Signatures
 
 - Use `[value: type]` notation to allow for future unknown properties with a consistent typing to be added to an object.
+- Can only use `string | number | symbol` for index.
 
 ```ts
 interface Price {
@@ -742,6 +835,39 @@ const ownedProperty: Price = {
 
 ownedProperty.tv = 500;         // Valid
 ownedProperty.owner = 'Derek';  // TSError: Type 'string' is not assignable to type 'number'.
+```
+
+- If a number index signature is used, other string properties do not have to follow type definition.
+
+```ts
+interface Users {
+  [userId: number]: string;
+  total: number;
+  active: boolean;
+}
+
+const users: Users = {
+  1: 'Bob',
+  2: 'Steve',
+  total: 2,
+  active: true,
+};
+```
+
+- When using a string index signature, all numeroc properties are converted to strings
+
+```ts
+interface Users {
+  [name: string]: string;
+}
+
+const users: Users = {
+  bob: 'Bob',
+  1: 'Josh',        // Ok
+  true: 'Fred',     // Ok
+};
+
+users[4] = 'John';  // Ok
 ```
 
 # Generics
@@ -964,6 +1090,38 @@ logData({ page: 14, location: 'There' });
 ```
 
 ## ReadonlyArray
+https://launchschool.com/lessons/e46f5e6c/assignments/72d37d4b
+
+- "Elements in a `ReadonlyArray` cannot be changed, added, or removed without the compiler raising an error."
+- The `ReadonlyArray` special type can be used with an existing type to prevent the data structure from being modified. While elements within the array can be mutated, the references themselves cannot be changed, nor can any additional elements be added or removed.
+
+```ts
+interface Student {
+  name: string;
+  year: number;
+}
+
+const students: ReadonlyArray<Student> = [
+  { name: 'Derek', year: 3 },
+  { name: 'Bob', year: 2 },
+];
+
+students[0].year = 4;                       // OK
+students[0] = { name: 'Shelby', year: 4 };  // TSError
+students.push({ name: 'Fred', year: 1 });   // TSError
+```
+
+# Type Unsoundness
+https://launchschool.com/lessons/edc1804c/assignments/8cc12760
+
+- "Type unsoundness happens when the type system fails to prevent type errors, resulting in runtime errors. This can lead to unexpected behavior and bugs in your code."
+- Despite all of TypeScript's compiler checks, some things can still tlip through the cracks.
+
+- Examples
+    1. Use of `any`
+    2. Type assertions
+    3. Indexing beyond bounds of array
+    4. Using `push`/`pop` on a tuple.
 
 # Notes
 
@@ -975,51 +1133,6 @@ logData({ page: 14, location: 'There' });
     4. `instanceof`
 - Short Circuting
     - https://launchschool.com/lessons/edc1804c/assignments/396c04b1
-- Exhaustiveness Checking
-    - https://launchschool.com/lessons/edc1804c/assignments/d4fe90c7
-    - Using `never` to prevent the end of an if/else or switch case
-- Type Unsoundness
-    - https://launchschool.com/lessons/edc1804c/assignments/8cc12760
-    - Despite all of TypeScript's compiler checks, some things can still slip through the cracks
-    - "Type unsoundness happens when the type system fails to prevent type errors, resulting in runtime errors. This can lead to unexpected behavior and bugs in your code."
-    - Examples
-        1. Use of `any`
-        2. Type assertions
-        3. Indexing beyond bounds of array
-- Index Signatures
-    - Can only use `string | number | symbol` for index
-
-- Declaration Merging
-    - https://launchschool.com/lessons/18156389/assignments/7e47e4a7
-    - "Declaration merging refers to the TypeScript compiler's ability to take two separate interface declarations that share the same name and create a single interface that merges the original ones."
-    - Only works for interfaces, not type aliases
-- Type Intersections
-    - https://launchschool.com/lessons/18156389/assignments/8ecb0087
-    - "Type intersections allow you to combine multiple types into a single type."
-    - Uses `&` to create intersection
-    - `extends` is generally preferred as it prevents clashing members
-        - A type intersection would allow `{ id: string }` and `{ id: number }` while `extends` would not.
-Interfaces vs Type Aliases
-    - https://launchschool.com/lessons/18156389/assignments/7fa6e9b3
-    1. Versatility
-        - Interfaces are only used for objects
-        - Type Aliases are used for *all* types
-    2. Declaration merging
-        - Interfaces can be defined repeatedly, merging each time (open)
-        - Type Aliases cannot be re-declared (closed)
-    3. Extending
-        - Interfaces use `extends`, which is more expressive
-        - Type Aliases use Type Intersections
-    4. Error messages
-        - Interfaces provided clearer errors (see `extends`)
-        - Type Aliases can create type unsoundness
-- Spread Operator
-    - https://launchschool.com/lessons/f1e59145/assignments/0305025b
-    - Enforces type during the merge
-    - Used to concatenate 2 objects
-        - If 2 are used and share properties, the second will overwrite the first
-        - If 1 is used before an object literal, the property will be overwritten
-        - If 1 is used after an object literal, an error will be shown
 - Options
     - https://launchschool.com/lessons/f1e59145/assignments/c103b744
 - Exceptions handling
@@ -1057,6 +1170,52 @@ function greet(greeting: string, name = 'Person'): void {
 let test = greet('Hello');
 ```
 
-- TURN INTELLISENSE OFF
 - Look into ReadonlyArray
 - Interface implements? (outside of class)
+
+DANIEL
+- Type assertion only focus on apiresponse
+- Intellisense on
+- A lot of exam tests small gotchas
+- Class declarations create a type
+- Index Signature
+    - If index signature key is a number, then there can be strings keys with any other type
+
+```ts
+interface Users {
+  [id: number]: string;
+  isOnline: boolean;
+  max: number;
+}
+```
+
+- Strutural assignment
+    - Mention more assignability
+        - Types are assignable if they have at least the amount of property
+
+        interface Person {
+  [k: string]: unknown;
+}
+
+
+function getProperty(obj: Person, key: "age"): string;
+function getProperty(obj: Person, key: "name"): string;
+function getProperty(obj: Person, key: "birthday"): string; 
+function getProperty(obj: Person, key: string): unknown {
+  return obj[key];
+}
+
+const obj = {
+  name: "John",
+  age: 30,
+};
+
+const x = getProperty(obj, "name");
+const y = getProperty(obj, "age");
+
+//
+
+interface Array<T> {
+  [index: number]: T;
+  length: number;
+}
